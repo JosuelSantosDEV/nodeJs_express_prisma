@@ -17,16 +17,19 @@ model Group {
   id          Int    @id @default(autoincrement())
   name        String @db.VarChar(255)
   description String
+  leads       Lead[] @relation("GroupLead")
 }
 
 model Lead {
-  id        Int        @id @default(autoincrement())
-  name      String     @db.VarChar(255)
-  email     String     @unique @db.VarChar(255)
-  phone     String     @db.VarChar(255)
-  status    LeadStatus @default(New)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime
+  id        Int            @id @default(autoincrement())
+  name      String         @db.VarChar(255)
+  email     String         @unique @db.VarChar(255)
+  phone     String         @db.VarChar(255)
+  groups    Group[]        @relation("GroupLead")
+  status    LeadStatus     @default(New)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  campaigns LeadCampaign[]
 }
 
 enum LeadStatus {
@@ -37,4 +40,36 @@ enum LeadStatus {
   Unresponsive
   Disqualified
   Archived
+}
+
+model Campaign {
+  id          Int            @id @default(autoincrement())
+  name        String         @db.VarChar(255)
+  description String
+  startDate   DateTime
+  endDate     DateTime?
+  leads       LeadCampaign[]
+}
+
+model LeadCampaign {
+  leadId     Int
+  campaignId Int
+  lead       Lead               @relation(fields: [leadId], references: [id])
+  campaign   Campaign           @relation(fields: [campaignId], references: [id])
+  status     LeadCampaignStatus @default(New)
+
+  @@id([leadId, campaignId])
+}
+
+enum LeadCampaignStatus {
+  New
+  Engaged
+  FollowUp_Scheduled
+  Contacted
+  Qualified
+  Converted
+  Unresponsive
+  Disqualified
+  Re_Engaged
+  Opted_Out
 }
